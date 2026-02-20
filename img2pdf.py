@@ -34,38 +34,35 @@ HTML_FORM = """
 </html>
 """
 
-@app.route('/', methods=['GET'])
+@app.route("/", methods=["GET"])
 def home():
     return render_template_string(HTML_FORM)
 
-@app.route('/run', methods=['POST'])
+@app.route("/run", methods=["POST"])
 def images_to_pdf():
-    files = request.files.getlist('images')
+    files = request.files.getlist("images")
     if not files:
         return "No images uploaded", 400
 
     images = []
     try:
         for file in files:
-            img = Image.open(file.stream).convert('RGB')
+            img = Image.open(file.stream).convert("RGB")
             images.append(img)
     except Exception as e:
         return f"Error processing images: {e}", 400
 
-    if not images:
-        return "No valid images found", 400
-
     pdf_buffer = BytesIO()
     first_img, *rest_imgs = images
-    first_img.save(pdf_buffer, format='PDF', save_all=True, append_images=rest_imgs)
+    first_img.save(pdf_buffer, format="PDF", save_all=True, append_images=rest_imgs)
     pdf_buffer.seek(0)
 
     return send_file(
         pdf_buffer,
         as_attachment=True,
         download_name="converted_images.pdf",
-        mimetype='application/pdf'
+        mimetype="application/pdf",
     )
 
-if __name__ == '__main__':
-    app.run(debug=True)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
